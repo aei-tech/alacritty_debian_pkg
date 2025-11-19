@@ -26,14 +26,24 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
 
     steps:
+      - name: Install git (required for checkout)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Configure git safe directory
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Install build dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
           apt-get install -y --no-install-recommends \
+            ca-certificates \
             tzdata \
             build-essential \
             curl \
@@ -54,8 +64,12 @@ jobs:
 
       - name: Install Rust
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          # Verify Rust installation
+          source "$HOME/.cargo/env"
+          rustc --version
+          cargo --version
 
       - name: Build Debian package
         run: |
