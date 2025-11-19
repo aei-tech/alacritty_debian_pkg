@@ -26,6 +26,8 @@ jobs:
 
     container:
       image: ${{ matrix.distro }}
+      env:
+        DEBIAN_FRONTEND: noninteractive
 
     steps:
       - name: Checkout code
@@ -59,7 +61,8 @@ jobs:
 
       - name: Build Debian package
         run: |
-          dpkg-buildpackage -b -us -uc
+          # Use -d to ignore missing build dependencies (cargo, rustc) since we installed them via rustup
+          dpkg-buildpackage -b -us -uc -d
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
