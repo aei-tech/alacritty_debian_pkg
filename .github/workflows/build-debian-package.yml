@@ -49,6 +49,7 @@ jobs:
             curl \
             debhelper \
             dpkg-dev \
+            fakeroot \
             git \
             lintian \
             pkg-config \
@@ -75,10 +76,15 @@ jobs:
         run: |
           # Source cargo environment to make cargo/rustc available in PATH
           source "$HOME/.cargo/env"
+          # Verify cargo is available
+          which cargo
+          cargo --version
           # Use -d to ignore missing build dependencies (cargo, rustc) since we installed them via rustup
           dpkg-buildpackage -b -us -uc -d
+          # Move artifacts
           mkdir -p artifacts
-          mv ../*.deb ../*.changes ../*.buildinfo artifacts/
+          mv ../*.deb ../*.changes ../*.buildinfo artifacts/ 2>/dev/null || true
+          ls -la artifacts/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
