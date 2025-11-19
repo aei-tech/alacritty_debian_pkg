@@ -9,3 +9,6 @@ debian/tmp/
 *.ddeb
 *.buildinfo
 *.changes
+
+# Rust build artifacts
+target/
