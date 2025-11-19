@@ -63,28 +63,23 @@ jobs:
         run: |
           # Use -d to ignore missing build dependencies (cargo, rustc) since we installed them via rustup
           dpkg-buildpackage -b -us -uc -d
+          mkdir -p artifacts
+          mv ../*.deb ../*.changes ../*.buildinfo artifacts/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: debian-packages-${{ matrix.codename }}
-          path: |
-            ../*.deb
-            ../*.changes
-            ../*.buildinfo
+          path: artifacts/*
 
       - name: Lint package
         run: |
-          cd ..
-          lintian *.deb || true
+          lintian artifacts/*.deb || true
 
       - name: Create Release (on tag)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            ../*.deb
-            ../*.changes
-            ../*.buildinfo
+          files: artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
