@@ -6,7 +6,7 @@ export DH_VERBOSE = 1
 	dh $@
 
 override_dh_auto_clean:
-	cargo clean
+	cargo clean || true
 
 override_dh_auto_build:
 	cargo build --release --locked

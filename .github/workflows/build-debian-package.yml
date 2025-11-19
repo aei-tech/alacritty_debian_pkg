@@ -58,9 +58,11 @@ jobs:
             libxcb-shape0-dev \
             libxcb-xfixes0-dev \
             libxkbcommon-dev \
+            libxkbcommon-x11-dev \
             cmake \
             libfreetype6-dev \
             libfontconfig1-dev \
+            libxcb1-dev \
             python3
 
       - name: Install Rust
@@ -79,12 +81,21 @@ jobs:
           # Verify cargo is available
           which cargo
           cargo --version
+          rustc --version
+          # Check disk space
+          df -h
           # Use -d to ignore missing build dependencies (cargo, rustc) since we installed them via rustup
           dpkg-buildpackage -b -us -uc -d
           # Move artifacts
           mkdir -p artifacts
           mv ../*.deb ../*.changes ../*.buildinfo artifacts/ 2>/dev/null || true
           ls -la artifacts/
+          # Check if we have any .deb files
+          if [ ! -f artifacts/*.deb ]; then
+            echo "ERROR: No .deb files found in artifacts/"
+            ls -la ../*.deb 2>&1 || echo "No .deb files in parent directory"
+            exit 1
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
