@@ -63,6 +63,8 @@ jobs:
 
       - name: Build Debian package
         run: |
+          # Source cargo environment to make cargo/rustc available in PATH
+          source "$HOME/.cargo/env"
           # Use -d to ignore missing build dependencies (cargo, rustc) since we installed them via rustup
           dpkg-buildpackage -b -us -uc -d
           mkdir -p artifacts
