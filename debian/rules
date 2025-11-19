@@ -1,6 +1,8 @@
 #!/usr/bin/make -f
 
 export DH_VERBOSE = 1
+# Export PATH to ensure cargo is found (installed via rustup in CI)
+export PATH := $(HOME)/.cargo/bin:$(PATH)
 
 %:
 	dh $@
@@ -9,7 +11,10 @@ override_dh_auto_clean:
 	cargo clean || true
 
 override_dh_auto_build:
-	cargo build --release --locked
+	cargo build --release --locked -p alacritty
+
+override_dh_auto_test:
+	cargo test --release --locked -p alacritty
 
 override_dh_auto_install:
 	mkdir -p debian/alacritty/usr/bin
