@@ -1,0 +1,26 @@
+Source: alacritty
+Section: x11
+Priority: optional
+Maintainer: AEI Tech <your-email@example.com>
+Build-Depends: debhelper-compat (= 13),
+               cargo,
+               rustc,
+               pkg-config,
+               libssl-dev,
+               libxcb-render0-dev,
+               libxcb-shape0-dev,
+               libxcb-xfixes0-dev,
+               libxkbcommon-dev
+Standards-Version: 4.6.0
+Homepage: https://alacritty.org
+Vcs-Git: https://github.com/aei-tech/alacritty_debian_pkg.git
+Vcs-Browser: https://github.com/aei-tech/alacritty_debian_pkg
+
+Package: alacritty
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A fast, cross-platform, OpenGL terminal emulator
+ Alacritty is a modern terminal emulator that comes with sensible defaults,
+ but allows for extensive configuration. By integrating with other
+ applications, rather than reimplementing their functionality, it manages to
+ provide a flexible set of features with high performance.

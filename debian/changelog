@@ -1,0 +1,5 @@
+alacritty (0.17.0-1) unstable; urgency=medium
+
+  * Initial Debian package release
+
+ -- AEI Tech <alexander.eirich.87@gmail.com>  Mon, 18 Nov 2025 23:44:35 +0000

@@ -1,1 +1,11 @@
-target
+# Debian packaging artifacts
+debian/.debhelper/
+debian/*-stamp
+debian/files
+debian/*.substvars
+debian/alacritty/
+debian/tmp/
+*.deb
+*.ddeb
+*.buildinfo
+*.changes

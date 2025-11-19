@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	cargo clean
+
+override_dh_auto_build:
+	cargo build --release --locked
+
+override_dh_auto_install:
+	mkdir -p debian/alacritty/usr/bin
+	cp target/release/alacritty debian/alacritty/usr/bin/
+	mkdir -p debian/alacritty/usr/share/man/man1
+	mkdir -p debian/alacritty/usr/share/applications
+	mkdir -p debian/alacritty/usr/share/icons/hicolor/scalable/apps
+
+override_dh_auto_test:
+	cargo test --release --locked || true

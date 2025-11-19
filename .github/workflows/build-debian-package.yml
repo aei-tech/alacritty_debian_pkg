@@ -1,0 +1,87 @@
+name: Build Debian Package
+
+on:
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - distro: ubuntu:20.04
+            codename: focal
+          - distro: ubuntu:22.04
+            codename: jammy
+          - distro: ubuntu:24.04
+            codename: noble
+          - distro: debian:11
+            codename: bullseye
+          - distro: debian:12
+            codename: bookworm
+
+    container:
+      image: ${{ matrix.distro }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            curl \
+            debhelper \
+            dpkg-dev \
+            git \
+            lintian \
+            pkg-config \
+            libssl-dev \
+            libxcb-render0-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxkbcommon-dev \
+            cmake \
+            libfreetype6-dev \
+            libfontconfig1-dev \
+            python3
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Build Debian package
+        run: |
+          dpkg-buildpackage -b -us -uc
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-packages-${{ matrix.codename }}
+          path: |
+            ../*.deb
+            ../*.changes
+            ../*.buildinfo
+
+      - name: Lint package
+        run: |
+          cd ..
+          lintian *.deb || true
+
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ../*.deb
+            ../*.changes
+            ../*.buildinfo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
