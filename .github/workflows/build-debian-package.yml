@@ -13,14 +13,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - distro: ubuntu:20.04
-            codename: focal
           - distro: ubuntu:22.04
             codename: jammy
           - distro: ubuntu:24.04
             codename: noble
-          - distro: debian:11
-            codename: bullseye
           - distro: debian:12
             codename: bookworm
 
@@ -30,19 +26,30 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
 
     steps:
+      - name: Install git (required for checkout)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Configure git safe directory
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Install build dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
           apt-get install -y --no-install-recommends \
+            ca-certificates \
             tzdata \
             build-essential \
             curl \
             debhelper \
             dpkg-dev \
+            fakeroot \
             git \
             lintian \
             pkg-config \
@@ -51,22 +58,45 @@ jobs:
             libxcb-shape0-dev \
             libxcb-xfixes0-dev \
             libxkbcommon-dev \
+            libxkbcommon-x11-dev \
             cmake \
             libfreetype6-dev \
             libfontconfig1-dev \
-            python3
+            libxcb1-dev \
+            python3 \
+            dh-cargo
 
       - name: Install Rust
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          # Verify Rust installation
+          . "$HOME/.cargo/env"
+          rustc --version
+          cargo --version
 
       - name: Build Debian package
         run: |
+          # Source cargo environment to make cargo/rustc available in PATH
+          . "$HOME/.cargo/env"
+          # Verify cargo is available
+          which cargo
+          cargo --version
+          rustc --version
+          # Check disk space
+          df -h
           # Use -d to ignore missing build dependencies (cargo, rustc) since we installed them via rustup
           dpkg-buildpackage -b -us -uc -d
+          # Move artifacts
           mkdir -p artifacts
-          mv ../*.deb ../*.changes ../*.buildinfo artifacts/
+          mv ../*.deb ../*.changes ../*.buildinfo artifacts/ 2>/dev/null || true
+          ls -la artifacts/
+          # Check if we have any .deb files
+          if [ ! -f artifacts/*.deb ]; then
+            echo "ERROR: No .deb files found in artifacts/"
+            ls -la ../*.deb 2>&1 || echo "No .deb files in parent directory"
+            exit 1
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
