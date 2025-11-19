@@ -71,14 +71,14 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           # Verify Rust installation
-          source "$HOME/.cargo/env"
+          . "$HOME/.cargo/env"
           rustc --version
           cargo --version
 
       - name: Build Debian package
         run: |
           # Source cargo environment to make cargo/rustc available in PATH
-          source "$HOME/.cargo/env"
+          . "$HOME/.cargo/env"
           # Verify cargo is available
           which cargo
           cargo --version
